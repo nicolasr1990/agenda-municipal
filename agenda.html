@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Agenda Municipal - Prueba</title>
+<style>
+body { font-family: Arial; margin: 20px; }
+input, textarea { display:block; margin-bottom:10px; width: 250px; }
+.evento { background:#eef; padding:5px; margin:5px 0; border-left:4px solid #55f; }
+</style>
+</head>
+<body>
+
+<h2>Registrar Evento</h2>
+
+<label>Fecha:</label>
+<input type="date" id="fecha">
+
+<label>Hora inicio:</label>
+<input type="time" id="inicio">
+
+<label>Hora fin:</label>
+<input type="time" id="fin">
+
+<label>Evento:</label>
+<input type="text" id="nombre">
+
+<label>Área:</label>
+<input type="text" id="area">
+
+<label>Observaciones:</label>
+<textarea id="obs"></textarea>
+
+<button onclick="guardar()">Guardar evento</button>
+
+<hr>
+
+<h2>Eventos registrados</h2>
+<div id="lista">Cargando eventos...</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbyi6O6D3t00nWw6zHDtnVM-4RvfzKVn1xLioRNElUvXflqrUyHOUQZCa4eZMleImtC_/exec"; // <-- reemplazar
+
+function guardar() {
+  // Armamos la URL con parámetros GET
+  const url = `${API_URL}?fecha=${encodeURIComponent(fecha.value)}`
+              + `&inicio=${encodeURIComponent(inicio.value)}`
+              + `&fin=${encodeURIComponent(fin.value)}`
+              + `&nombre=${encodeURIComponent(nombre.value)}`
+              + `&area=${encodeURIComponent(area.value)}`
+              + `&obs=${encodeURIComponent(obs.value)}`;
+
+  fetch(url)
+    .then(res => res.text())
+    .then(res => {
+      if (res === "OK") {
+        alert("Evento guardado");
+        cargarEventos();
+      } else {
+        alert("Error al guardar el evento");
+      }
+    });
+}
+
+function cargarEventos() {
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(eventos => {
+      lista.innerHTML = "";
+      eventos.forEach(ev => {
+        const div = document.createElement("div");
+        div.className = "evento";
+        div.innerHTML = `<b>${ev["Evento"]}</b><br>
+                        Fecha: ${ev["Fecha"]}<br>
+                        ${ev["Hora inicio"]} - ${ev["Hora fin"]}<br>
+                        Área: ${ev["Área"]}<br>
+                        Obs: ${ev["Observaciones"]}`;
+        lista.appendChild(div);
+      });
+      if (eventos.length === 0) lista.innerHTML = "No hay eventos registrados.";
+    })
+    .catch(err => lista.innerHTML = "Error al obtener eventos.");
+}
+
+cargarEventos();
+</script>
+
+</body>
+</html>
